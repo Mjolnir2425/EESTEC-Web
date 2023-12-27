@@ -4,6 +4,8 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -20,6 +22,43 @@ public class StudentService {
 
     public List<Student> getStudents() {
         return studentRepository.findAll();
+    }
+
+    public List<Student> getStudentById(Long id) {
+        return studentRepository.findByIdEquals(id);
+    }
+
+    public List<Student> getStudentByName(String name) {
+        return studentRepository.findByNameStartingWith(name);
+    }
+
+    public List<Student> getStudentByEmail(String email) {
+        return studentRepository.findByEmailStartingWith(email);
+    }
+
+    public List<Student> getStudentByDob(LocalDate dobAfter, LocalDate dobBefore) {
+        if (dobAfter == null && dobBefore == null) {
+            throw new IllegalArgumentException();
+        }
+        if (dobAfter != null && dobBefore == null) {
+            return studentRepository.findByDobAfter(dobAfter);
+        }
+        if (dobAfter == null) {
+            return studentRepository.findByDobBefore(dobBefore);
+        }
+
+        List<Student> studentsInRange = new ArrayList<>();
+
+        List<Student> studentsAfterStartDate = studentRepository.findByDobAfter(dobAfter);
+        List<Student> studentsBeforeEndDate = studentRepository.findByDobBefore(dobBefore);
+
+        for (Student student : studentsAfterStartDate) {
+            if (studentsBeforeEndDate.contains(student)) {
+                studentsInRange.add(student);
+            }
+        }
+
+        return studentsInRange;
     }
 
     public void addNewStudent(Student student) {

@@ -1,8 +1,10 @@
 package com.example.demo.student;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -17,7 +19,29 @@ public class StudentController {
     }
 
     @GetMapping
-    public List<Student> getStudent() {
+    public List<Student> getStudent(
+            @RequestParam(required = false) Long id,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dobAfter,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dobBefore
+    ) {
+        int argCount = 0;
+        if (id != null) argCount++;
+        if (name != null) argCount++;
+        if (email != null) argCount++;
+        if (dobAfter != null) argCount++;
+        if (dobBefore != null) argCount++;
+
+        if (argCount > 1 && !(argCount == 2 && dobAfter != null && dobBefore != null)) {
+            throw new IllegalArgumentException();
+        }
+
+        if (id != null) return studentService.getStudentById(id);
+        if (name != null) return  studentService.getStudentByName(name);
+        if (email != null) return studentService.getStudentByEmail(email);
+        if (dobAfter != null || dobBefore != null) return studentService.getStudentByDob(dobAfter, dobBefore);
+
         return studentService.getStudents();
     }
 
