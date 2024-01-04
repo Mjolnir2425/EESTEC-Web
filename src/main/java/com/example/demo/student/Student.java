@@ -1,9 +1,11 @@
 package com.example.demo.student;
 
+import com.example.demo.course.Course;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.time.Period;
+import java.util.List;
 
 @Entity
 @Table
@@ -17,6 +19,7 @@ public class Student {
     private LocalDate dob;
     @Transient
     private Integer age;
+    private List<Course> courses;
 
     public Student() {
     }
