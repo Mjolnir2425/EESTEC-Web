@@ -2,14 +2,17 @@ package com.example.demo.course;
 
 import com.example.demo.student.Student;
 import com.example.demo.student.StudentController;
+import com.example.demo.student.StudentDto;
 import com.example.demo.student.StudentService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+@Service
 public class CourseService {
 
     private final CourseRepository courseRepository;
@@ -21,20 +24,28 @@ public class CourseService {
         this.studentService = studentService;
     }
 
-    public List<Course> getCourses() {
-        return courseRepository.findAll();
+    public boolean exists(Long id) {
+        return !getCourse(id).isEmpty();
     }
 
-    public List<Course> getCourseById(Long id) {
+    public List<CourseDto> getCourses() {
+        return Course.getDtos(courseRepository.findAll());
+    }
+
+    public List<Course> getCourse(Long id) {
         return courseRepository.findByIdEquals(id);
     }
 
-    public List<Course> getCourseByName(String name) {
-        return courseRepository.findByNameStartingWith(name);
+    public List<CourseDto> getCourseById(Long id) {
+        return Course.getDtos(courseRepository.findByIdEquals(id));
     }
 
-    public List<Course> getCourseByCapacity(Integer capacity) {
-        return courseRepository.findByCapacityEquals(capacity);
+    public List<CourseDto> getCourseByName(String name) {
+        return Course.getDtos(courseRepository.findByNameStartingWith(name));
+    }
+
+    public List<CourseDto> getCourseByCapacity(Integer capacity) {
+        return Course.getDtos(courseRepository.findByCapacityEquals(capacity));
     }
 
     public void addNewCourse(Course course) {
@@ -91,12 +102,18 @@ public class CourseService {
                 ));
 
         for (Long studentId : studentIds) {
-            List<Student> students = studentService.getStudentById(studentId);
+            List<Student> students = studentService.getStudent(studentId);
             if (students.isEmpty()) {
                 continue;
             }
+            Student student = students.getFirst();
 
-            course.addStudent(students.getFirst());
+            if (student.getCourses().contains(course)) {
+                continue;
+            }
+
+            course.addStudent(student);
+            student.addCourse(course);
         }
     }
 }

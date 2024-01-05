@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.time.Period;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -19,7 +20,8 @@ public class Student {
     private LocalDate dob;
     @Transient
     private Integer age;
-    private List<Course> courses;
+    @ManyToMany(mappedBy = "students")
+    private List<Course> courses = new ArrayList<>();
 
     public Student() {
     }
@@ -75,6 +77,41 @@ public class Student {
 
     public void setAge(Integer age) {
         this.age = age;
+    }
+
+    public List<Course> getCourses() {
+        return courses;
+    }
+
+    public void setCourses(List<Course> courses) {
+        this.courses = courses;
+    }
+
+    public void addCourse(Course course) {
+        if (courses.contains(course)) {
+            throw new IllegalStateException("student already in course");
+        }
+        courses.add(course);
+    }
+
+    public void removeCourse(Course course) {
+        courses.remove(course);
+    }
+
+    public StudentDto getDto() {
+        List<Long> coursesIds = new ArrayList<>();
+        for (Course course : courses) {
+            coursesIds.add(course.getId());
+        }
+        return new StudentDto(name, email, dob, coursesIds);
+    }
+
+    public static List<StudentDto> getDtos(List<Student> students) {
+        List<StudentDto> dtos = new ArrayList<>();
+        for (Student student : students) {
+            dtos.add(student.getDto());
+        }
+        return dtos;
     }
 
     @Override

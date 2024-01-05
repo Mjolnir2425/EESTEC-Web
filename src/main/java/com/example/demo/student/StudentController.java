@@ -1,5 +1,6 @@
 package com.example.demo.student;
 
+import com.example.demo.course.Course;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +20,7 @@ public class StudentController {
     }
 
     @GetMapping
-    public List<Student> getStudent(
+    public List<StudentDto> getStudent(
             @RequestParam(required = false) Long id,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String email,
@@ -50,16 +51,26 @@ public class StudentController {
         studentService.addNewStudent(student);
     }
 
-    @DeleteMapping(path = "{studentId}")
-    public void deleteStudent(@PathVariable("studentId") Long id) {
-        studentService.deleteStudent(id);
+    @DeleteMapping
+    public void deleteStudent(@RequestParam Long studentId) {
+        if (!studentService.exists(studentId)) {
+            throw new IllegalStateException();
+        }
+        Student student = studentService.getStudent(studentId).getFirst();
+        for (Course course : student.getCourses()) {
+            course.removeStudent(student);
+        }
+        studentService.deleteStudent(studentId);
     }
 
-    @PutMapping(path = "{studentId}")
+    @PutMapping
     public void updateStudent(
-            @PathVariable("studentId") Long studentId,
+            @RequestParam Long studentId,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String email) {
+        if (!studentService.exists(studentId)) {
+            throw new IllegalStateException();
+        }
         studentService.updateStudent(studentId, name, email);
     }
 }

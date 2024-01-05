@@ -12,7 +12,6 @@ import java.util.Optional;
 
 @Service
 public class StudentService {
-
     private final StudentRepository studentRepository;
 
     @Autowired
@@ -20,31 +19,39 @@ public class StudentService {
         this.studentRepository = studentRepository;
     }
 
-    public List<Student> getStudents() {
-        return studentRepository.findAll();
+    public boolean exists(Long id) {
+        return !getStudent(id).isEmpty();
     }
 
-    public List<Student> getStudentById(Long id) {
+    public List<StudentDto> getStudents() {
+        return Student.getDtos(studentRepository.findAll());
+    }
+
+    public List<Student> getStudent(Long id) {
         return studentRepository.findByIdEquals(id);
     }
 
-    public List<Student> getStudentByName(String name) {
-        return studentRepository.findByNameStartingWith(name);
+    public List<StudentDto> getStudentById(Long id) {
+        return Student.getDtos(studentRepository.findByIdEquals(id));
     }
 
-    public List<Student> getStudentByEmail(String email) {
-        return studentRepository.findByEmailStartingWith(email);
+    public List<StudentDto> getStudentByName(String name) {
+        return Student.getDtos(studentRepository.findByNameStartingWith(name));
     }
 
-    public List<Student> getStudentByDob(LocalDate dobAfter, LocalDate dobBefore) {
+    public List<StudentDto> getStudentByEmail(String email) {
+        return Student.getDtos(studentRepository.findByEmailStartingWith(email));
+    }
+
+    public List<StudentDto> getStudentByDob(LocalDate dobAfter, LocalDate dobBefore) {
         if (dobAfter == null && dobBefore == null) {
             throw new IllegalArgumentException();
         }
         if (dobAfter != null && dobBefore == null) {
-            return studentRepository.findByDobAfter(dobAfter);
+            return Student.getDtos(studentRepository.findByDobAfter(dobAfter));
         }
         if (dobAfter == null) {
-            return studentRepository.findByDobBefore(dobBefore);
+            return Student.getDtos(studentRepository.findByDobBefore(dobBefore));
         }
 
         List<Student> studentsInRange = new ArrayList<>();
@@ -58,7 +65,7 @@ public class StudentService {
             }
         }
 
-        return studentsInRange;
+        return Student.getDtos(studentsInRange);
     }
 
     public void addNewStudent(Student student) {

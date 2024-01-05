@@ -3,6 +3,7 @@ package com.example.demo.course;
 import com.example.demo.student.Student;
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -14,7 +15,13 @@ public class Course {
     private Long id;
     private String name;
     private Integer capacity;
-    private List<Student> students;
+    @ManyToMany
+    @JoinTable(
+            name = "course_student",
+            joinColumns = @JoinColumn(name = "course_id"),
+            inverseJoinColumns = @JoinColumn(name = "student_id")
+    )
+    private List<Student> students = new ArrayList<>();
 
     public Course() {
     }
@@ -73,7 +80,27 @@ public class Course {
     }
 
     public void addStudent(Student student) {
-        this.students.add(student);
+        students.add(student);
+    }
+
+    public void removeStudent(Student student) {
+        students.remove(student);
+    }
+
+    public CourseDto getDto() {
+        List<Long> studentsIds = new ArrayList<>();
+        for (Student student : students) {
+            studentsIds.add(student.getId());
+        }
+        return new CourseDto(name, capacity, studentsIds);
+    }
+
+    public static List<CourseDto> getDtos(List<Course> courses) {
+        List<CourseDto> dtos = new ArrayList<>();
+        for (Course course : courses) {
+            dtos.add(course.getDto());
+        }
+        return dtos;
     }
 
     @Override
